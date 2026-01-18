@@ -3,29 +3,76 @@ extends CharacterBody2D
 # i love my powers of 2
 const SPEED_MAX = 128
 const ACCELERATION_BASE = 64
-const FRICTION_BASE = 32
-const GRAVITY_MAX = 512
-const JUMP_POWER = 256
-var jump_state
+const FRICTION_BASE = 16
+const AIR_ACCEL_FRICTION = 0.25
+const GRAVITY_MAX = 256
+const JUMP_POWER = -256
+var midair_jump
+var last_floor_state
 
 func _physics_process(_delta: float) -> void:
+	# forgive me children, for i have failed you in terms of efficiency
+	
 	# left-right movement
 	var direction = Input.get_axis("LEFT", "RIGHT")
 	
+	# adjust acceleration, friction if you are in the air
+	# i have a small feeling that this isn't optimal
 	if direction: 
-		velocity.x = move_toward(velocity.x, SPEED_MAX * direction, ACCELERATION_BASE)
+		if is_on_floor():
+			velocity.x = move_toward(velocity.x, SPEED_MAX * direction, ACCELERATION_BASE)
+		else:
+			velocity.x = move_toward(velocity.x, SPEED_MAX * direction, ACCELERATION_BASE * AIR_ACCEL_FRICTION)
 	else:
-		velocity.x = move_toward(velocity.x, 0, FRICTION_BASE)
+		if is_on_floor():
+			velocity.x = move_toward(velocity.x, 0, FRICTION_BASE)
+		else:
+			velocity.x = move_toward(velocity.x, 0, FRICTION_BASE * AIR_ACCEL_FRICTION)
+		
+	# activate coyote timer
+	if last_floor_state == true and not is_on_floor():
+		$CoyoteTimer.start()
 	
-	if Input.is_action_just_pressed("JUMP") and is_on_floor():
-		velocity.y -= JUMP_POWER
+	# replenish midair jump if on floor
+	if is_on_floor():
+		midair_jump = true
+		
+	# rotate wall jump raycast
+	if velocity.x:
+		$WallJumpRaycast.target_position.x = 15 * (velocity.x/abs(velocity.x))
 	
+	# activate jump
+	if Input.is_action_just_pressed("JUMP"):
+		$JumpBufferTimer.start()
+	
+	# actually do the jump
+	if not $JumpBufferTimer.is_stopped():
+		if is_on_floor() or not $CoyoteTimer.is_stopped():
+			velocity.y = JUMP_POWER
+			$JumpBufferTimer.stop()
+			$CoyoteTimer.stop()
+		elif $WallJumpRaycast.is_colliding():
+			velocity.y = JUMP_POWER * 0.7
+			velocity.x = (-256 * ($WallJumpRaycast.target_position.x/15))
+			$JumpBufferTimer.stop()
+		elif midair_jump == true:
+			velocity.y = JUMP_POWER
+			$JumpBufferTimer.stop()
+			midair_jump = false
+	
+	# gravity (handled after jumps)
 	if not is_on_floor():
-		velocity.y = move_toward(velocity.y, GRAVITY_MAX, 16)
+		# Floatier jumps if you hold JUMP, fastfall if you hold DOWN
+		# I initially skipped the conditional but that wouldn't be very readable.
+		if Input.is_action_pressed("JUMP"):
+			velocity.y = move_toward(velocity.y, GRAVITY_MAX, 10) # nooooo my beloved powers of 2
+		elif Input.is_action_pressed("DOWN"):
+			velocity.y = move_toward(velocity.y, GRAVITY_MAX, 32)
+		else:
+			velocity.y = move_toward(velocity.y, GRAVITY_MAX, 16)
 	
 	# animation handler
 	# currently flips the animation horizontally, will add a conditional if that changes
-	
 	if velocity.x:
 		$AnimatedSprite2D.scale.x = velocity.x/abs(velocity.x)
 		$AnimatedSprite2D.play("walk")
@@ -33,4 +80,7 @@ func _physics_process(_delta: float) -> void:
 		# idle animation is 1 frame atm, can be changed
 		$AnimatedSprite2D.play("idle")
 	
+	last_floor_state = is_on_floor()
+	
+	# actually moves the character based on current velocity
 	move_and_slide()
