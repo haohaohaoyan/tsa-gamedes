@@ -7,7 +7,9 @@ const FRICTION_BASE = 16
 const AIR_ACCEL_FRICTION = 0.25
 const GRAVITY_MAX = 256
 const JUMP_POWER = -256
-var midair_jump
+const DASH_POWER = 64
+var dash_available
+var current_dash_direction
 var last_floor_state
 
 func _physics_process(_delta: float) -> void:
@@ -35,7 +37,7 @@ func _physics_process(_delta: float) -> void:
 	
 	# replenish midair jump if on floor
 	if is_on_floor():
-		midair_jump = true
+		dash_available = true
 		
 	# rotate wall jump raycast
 	if velocity.x:
@@ -55,10 +57,16 @@ func _physics_process(_delta: float) -> void:
 			velocity.y = JUMP_POWER * 0.7
 			velocity.x = (-256 * ($WallJumpRaycast.target_position.x/15))
 			$JumpBufferTimer.stop()
-		elif midair_jump == true:
-			velocity.y = JUMP_POWER
-			$JumpBufferTimer.stop()
-			midair_jump = false
+	
+	# Dashing: upon starting a dash, set velocity, expend dash, and keep moving in that direction while timer is active
+	if Input.is_action_pressed("DASH") and dash_available:
+		# dash in currently held direction
+		current_dash_direction = Input.get_vector("LEFT", "RIGHT", "UP", "DOWN")
+		dash_available = false
+		$DashEffectTimer.start()
+		
+	if !$DashEffectTimer.is_stopped():
+		velocity += current_dash_direction * DASH_POWER
 	
 	# gravity (handled after jumps)
 	if not is_on_floor():
