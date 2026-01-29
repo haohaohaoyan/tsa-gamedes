@@ -1,10 +1,22 @@
-[gd_scene load_steps=3 format=3 uid="uid://c4mmsgjepoh6y"]
+[gd_scene format=3 uid="uid://c4mmsgjepoh6y"]
 
+[ext_resource type="Script" uid="uid://cdwqkslcjjolt" path="res://scenes/game.gd" id="1_lnu2h"]
 [ext_resource type="PackedScene" uid="uid://b5dtfcpgt7pb2" path="res://scenes/player.tscn" id="1_uwrxv"]
 [ext_resource type="PackedScene" uid="uid://bqmhey3oyi13p" path="res://scenes/Level1.tscn" id="2_yqjtg"]
 
-[node name="Game" type="Node2D"]
+[node name="Game" type="Node2D" unique_id=133885360]
+script = ExtResource("1_lnu2h")
 
-[node name="Player" parent="." instance=ExtResource("1_uwrxv")]
+[node name="Player" parent="." unique_id=1952319629 instance=ExtResource("1_uwrxv")]
 
-[node name="Level1" parent="." instance=ExtResource("2_yqjtg")]
+[node name="Level1" parent="." unique_id=1370758370 instance=ExtResource("2_yqjtg")]
+
+[node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=1379309046]
+
+[node name="ColorRect" type="ColorRect" parent="CanvasLayer" unique_id=238839692]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0)
