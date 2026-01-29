@@ -12,6 +12,10 @@ var dash_available
 var current_dash_direction
 var last_floor_state
 
+signal death # reset game
+
+# Quick note for collision layers for you guys! Layer 1 is physical collision, layer 2 is death
+
 func _physics_process(_delta: float) -> void:
 	# forgive me children, for i have failed you in terms of efficiency
 	
@@ -92,3 +96,7 @@ func _physics_process(_delta: float) -> void:
 	
 	# actually moves the character based on current velocity
 	move_and_slide()
+	
+func _on_death_detect(_area):
+	# Oh no you died, emit signal to tell game to reset
+	death.emit()

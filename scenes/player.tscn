@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=3 uid="uid://b5dtfcpgt7pb2"]
+[gd_scene format=3 uid="uid://b5dtfcpgt7pb2"]
 
 [ext_resource type="Script" uid="uid://b181ll3545iym" path="res://script/player.gd" id="1_3vyb7"]
 [ext_resource type="Texture2D" uid="uid://m2dbrctg8oar" path="res://assets/player_test_sheet.png" id="2_g2els"]
@@ -40,33 +40,45 @@ animations = [{
 "speed": 5.0
 }]
 
-[node name="Player" type="CharacterBody2D"]
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_qhqgy"]
+size = Vector2(14, 14)
+
+[node name="Player" type="CharacterBody2D" unique_id=1622176108]
 script = ExtResource("1_3vyb7")
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1193669523]
 shape = SubResource("RectangleShape2D_g2els")
 
-[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=1922908162]
 sprite_frames = SubResource("SpriteFrames_qlg0r")
 animation = &"idle"
 
-[node name="Camera2D" type="Camera2D" parent="."]
+[node name="Camera2D" type="Camera2D" parent="." unique_id=638338012]
 zoom = Vector2(2, 2)
 process_callback = 0
 position_smoothing_enabled = true
 
-[node name="DashEffectTimer" type="Timer" parent="."]
+[node name="DashEffectTimer" type="Timer" parent="." unique_id=79659612]
 wait_time = 0.1
 one_shot = true
 
-[node name="JumpBufferTimer" type="Timer" parent="."]
+[node name="JumpBufferTimer" type="Timer" parent="." unique_id=699223847]
 wait_time = 0.1
 one_shot = true
 
-[node name="CoyoteTimer" type="Timer" parent="."]
+[node name="CoyoteTimer" type="Timer" parent="." unique_id=1236496763]
 wait_time = 0.15
 one_shot = true
 
-[node name="WallJumpRaycast" type="RayCast2D" parent="."]
+[node name="WallJumpRaycast" type="RayCast2D" parent="." unique_id=1323819828]
 exclude_parent = false
 target_position = Vector2(15, 0)
+
+[node name="DeathHurtbox" type="Area2D" parent="." unique_id=10700285]
+collision_layer = 2
+collision_mask = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="DeathHurtbox" unique_id=1708692261]
+shape = SubResource("RectangleShape2D_qhqgy")
+
+[connection signal="area_entered" from="DeathHurtbox" to="." method="_on_death_detect"]
